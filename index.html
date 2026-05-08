@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>私人朋友筆記本</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="朋友筆記">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --primary-dark: #3730a3;
+      --accent: #ec4899;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f5f3ff;
+      --card: #ffffff;
+      --text: #1e1b4b;
+      --text-light: #6b7280;
+      --border: #e0e7ff;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: calc(12px + var(--safe-top)) 16px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(79,70,229,0.3);
+    }
+    .app-header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; }
+    .app-header p { font-size: 0.75rem; opacity: 0.85; margin-top: 1px; }
+
+    /* ── Install Banner ── */
+    #install-banner {
+      display: none;
+      background: #1e1b4b;
+      color: white;
+      padding: 10px 16px;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+    }
+    #install-banner.show { display: flex; }
+    #install-banner button {
+      background: var(--primary-light);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #install-banner .close-btn {
+      background: transparent;
+      padding: 4px 8px;
+      opacity: 0.6;
+      margin-left: auto;
+    }
+
+    /* ── Tab Bar ── */
+    .tab-bar {
+      display: flex;
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: calc(62px + var(--safe-top));
+      z-index: 90;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 13px 8px;
+      border: none;
+      background: transparent;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-light);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+    .tab-btn.active { color: var(--primary); }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* ── Content ── */
+    .tab-content { display: none; padding: 16px; padding-bottom: calc(24px + var(--safe-bottom)); }
+    .tab-content.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 5px;
+    }
+    input[type="text"], input[type="date"], textarea, select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.92rem;
+      background: #fafafa;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--primary); background: white; }
+    textarea { min-height: 80px; resize: vertical; }
+
+    /* ── Photo upload ── */
+    .photo-upload {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .photo-preview {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+    .photo-placeholder {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px dashed var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .upload-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px dashed var(--primary-light);
+      border-radius: 10px;
+      background: #eef2ff;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+    #photo-input { display: none; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:active { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+    }
+    .btn-sm { padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; width: auto; }
+
+    /* ── Friend selector ── */
+    .friend-list { display: flex; flex-direction: column; gap: 10px; }
+    .friend-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--card);
+      border-radius: 14px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .friend-card.selected {
+      border-color: var(--primary);
+      background: #eef2ff;
+    }
+    .friend-card:active { transform: scale(0.98); }
+    .friend-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+    .friend-avatar-placeholder {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-light), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .friend-card-info { flex: 1; min-width: 0; }
+    .friend-card-name { font-weight: 700; font-size: 0.95rem; }
+    .friend-card-sub { font-size: 0.75rem; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+    /* ── Friend detail view ── */
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .detail-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary-light);
+      flex-shrink: 0;
+    }
+    .detail-avatar-placeholder {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-light), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    .detail-name { font-size: 1.3rem; font-weight: 800; }
+    .detail-meta { font-size: 0.78rem; color: var(--text-light); margin-top: 3px; }
+
+    .info-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: flex-start;
+    }
+    .info-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-light);
+      min-width: 60px;
+      padding-top: 1px;
+    }
+    .info-value { font-size: 0.88rem; flex: 1; }
+
+    .likes-box {
+      background: #ecfdf5;
+      border: 1px solid #6ee7b7;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .dislikes-box {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .box-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .box-content { font-size: 0.88rem; white-space: pre-wrap; }
+
+    /* ── Social coaching ── */
+    .coaching-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .coaching-item {
+      background: #eef2ff;
+      border-radius: 10px;
+      padding: 10px;
+      border-left: 3px solid var(--primary-light);
+    }
+    .coaching-item .what { font-size: 0.72rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .coaching-item .sentence { font-size: 0.78rem; color: var(--text); line-height: 1.4; }
+    .warning-box {
+      background: #fffbeb;
+      border: 1px solid #fbbf24;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    /* ── Edit panel ── */
+    .edit-panel { display: none; }
+    .edit-panel.open { display: block; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-light);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: calc(24px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e1b4b;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Import/Export ── */
+    .data-row { display: flex; gap: 10px; }
+    .data-row .btn { flex: 1; }
+    #json-import { display: none; }
+
+    /* ── Back button ── */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 0;
+      margin-bottom: 12px;
+    }
+
+    /* ── Views ── */
+    #list-view, #detail-view { }
+    #detail-view { display: none; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+    /* ── Birthday countdown ── */
+    .birthday-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    /* iOS safe area for fullscreen */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      .app-header { padding-top: calc(12px + env(safe-area-inset-top)); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+  <h1>💾 私人朋友筆記本</h1>
+  <p>記錄朋友資料，練習社交技巧</p>
+</header>
+
+<!-- Install Banner -->
+<div id="install-banner">
+  <span>📲 加入主畫面，隨時使用！</span>
+  <button id="install-btn">安裝 App</button>
+  <button class="close-btn" onclick="document.getElementById('install-banner').classList.remove('show')">✕</button>
+</div>
+
+<!-- Tab Bar -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('review')">👀 溫習朋友</button>
+  <button class="tab-btn" onclick="switchTab('add')">➕ 新增朋友</button>
+  <button class="tab-btn" onclick="switchTab('settings')">⚙️ 資料管理</button>
+</div>
+
+<!-- ═══════════════ TAB: REVIEW ═══════════════ -->
+<div id="tab-review" class="tab-content active">
+
+  <!-- List View -->
+  <div id="list-view">
+    <div id="friend-list-container">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- Detail View -->
+  <div id="detail-view">
+    <button class="back-btn" onclick="showListView()">← 返回列表</button>
+
+    <div class="card">
+      <div class="detail-header">
+        <div id="detail-photo-wrap"></div>
+        <div>
+          <div class="detail-name" id="detail-name"></div>
+          <div class="detail-meta" id="detail-meta"></div>
+          <div id="detail-birthday-badge"></div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">🌟 興趣</span>
+        <span class="info-value" id="detail-interests">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">👨‍👩‍👧 家族</span>
+        <span class="info-value" id="detail-siblings">—</span>
+      </div>
+    </div>
+
+    <!-- Likes / Dislikes -->
+    <div class="card">
+      <div class="card-title">📊 喜好概覽</div>
+      <div class="likes-box">
+        <div class="box-title">❤️ 喜歡的事物</div>
+        <div class="box-content" id="detail-likes">尚未記錄</div>
+      </div>
+      <div style="height:8px"></div>
+      <div class="dislikes-box">
+        <div class="box-title">🚫 不喜歡 / 避雷區</div>
+        <div class="box-content" id="detail-dislikes">尚未記錄</div>
+      </div>
+    </div>
+
+    <!-- Social Coaching -->
+    <div class="card">
+      <div class="card-title">💡 社交教練：六何法開話題</div>
+      <div id="coaching-intro" style="font-size:0.82rem;color:var(--text-light);margin-bottom:8px;"></div>
+      <div class="coaching-grid" id="coaching-grid"></div>
+      <div id="coaching-warning"></div>
+    </div>
+
+    <!-- Edit Panel -->
+    <div class="card">
+      <div class="card-title" style="cursor:pointer;" onclick="toggleEdit()">
+        🛠️ 修改或刪除資料 <span id="edit-toggle-icon">▼</span>
+      </div>
+      <div class="edit-panel" id="edit-panel">
+        <div class="form-group">
+          <label>名字</label>
+          <input type="text" id="edit-name">
+        </div>
+        <div class="form-group">
+          <label>興趣</label>
+          <input type="text" id="edit-interests">
+        </div>
+        <div class="form-group">
+          <label>喜歡的事物</label>
+          <textarea id="edit-likes"></textarea>
+        </div>
+        <div class="form-group">
+          <label>不喜歡 / 避雷區</label>
+          <textarea id="edit-dislikes"></textarea>
+        </div>
+        <div class="form-group">
+          <label>兄弟姐妹</label>
+          <input type="text" id="edit-siblings">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button class="btn btn-primary" style="flex:1" onclick="saveEdit()">💾 儲存修改</button>
+          <button class="btn btn-danger" style="flex:1" onclick="deleteFriend()">🗑️ 刪除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: ADD ═══════════════ -->
+<div id="tab-add" class="tab-content">
+  <div class="card">
+    <div class="card-title">📝 記錄新朋友</div>
+
+    <div class="form-group">
+      <label>朋友名字 *</label>
+      <input type="text" id="add-name" placeholder="例如：小明">
+    </div>
+
+    <div class="form-group">
+      <label>生日日期</label>
+      <input type="date" id="add-birthday" value="2010-01-01">
+    </div>
+
+    <div class="form-group">
+      <label>相片</label>
+      <div class="photo-upload">
+        <div class="photo-placeholder" id="add-photo-placeholder" onclick="document.getElementById('photo-input').click()">📷</div>
+        <img class="photo-preview" id="add-photo-preview" style="display:none;" src="" alt="相片預覽">
+        <div class="upload-btn" onclick="document.getElementById('photo-input').click()">
+          點此上傳相片<br>
+          <span style="font-weight:400;opacity:0.7">(JPG / PNG)</span>
+        </div>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(this)">
+    </div>
+
+    <div class="form-group">
+      <label>有哪些兄弟姐妹？</label>
+      <input type="text" id="add-siblings" placeholder="例如：一個妹妹">
+    </div>
+
+    <div class="form-group">
+      <label>主要興趣</label>
+      <input type="text" id="add-interests" placeholder="例如：地鐵、巴士、繪畫">
+    </div>
+
+    <div class="form-group">
+      <label>喜歡的東西</label>
+      <textarea id="add-likes" placeholder="例如：顏色、食物、運動、學科、遊戲、地方"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>不喜歡 / 害怕的事（避雷區）</label>
+      <textarea id="add-dislikes" placeholder="例如：嘈音、人多的地方"></textarea>
+    </div>
+
+    <button class="btn btn-primary" onclick="addFriend()">✅ 儲存朋友資料</button>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: SETTINGS ═══════════════ -->
+<div id="tab-settings" class="tab-content">
+  <div class="card">
+    <div class="card-title">📤 備份與還原</div>
+    <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:14px;">
+      所有資料已自動儲存在你的手機上。你也可以匯出 JSON 檔案作備份，或在新裝置上還原。
+    </p>
+    <div class="data-row">
+      <button class="btn btn-primary" onclick="exportJSON()">📥 匯出備份檔</button>
+      <button class="btn btn-outline" onclick="document.getElementById('json-import').click()">📂 匯入備份</button>
+    </div>
+    <input type="file" id="json-import" accept=".json" onchange="importJSON(this)">
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 統計</div>
+    <div id="stats-content" style="font-size:0.9rem;line-height:1.8;"></div>
+  </div>
+
+  <div class="card" style="border-color:#fca5a5;">
+    <div class="card-title" style="color:var(--danger);">⚠️ 危險區域</div>
+    <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:12px;">刪除所有朋友資料（無法復原）</p>
+    <button class="btn btn-danger" onclick="clearAll()">🗑️ 清除全部資料</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let friends = [];
+let currentIdx = -1;
+let editOpen = false;
+let deferredInstallPrompt = null;
+
+// ── Persistence ───────────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('friend_notes_v1', JSON.stringify(friends));
+}
+function load() {
+  try {
+    const raw = localStorage.getItem('friend_notes_v1');
+    friends = raw ? JSON.parse(raw) : [];
+  } catch(e) { friends = []; }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const idx = ['review','add','settings'].indexOf(name);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  if (name === 'review') renderFriendList();
+  if (name === 'settings') renderStats();
+}
+
+// ── PWA Install ───────────────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const result = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('show');
+  showToast('✅ App 已成功安裝！');
+});
+
+// ── Helper: days until birthday ──────────────────────────────────────────
+function daysUntilBirthday(birthdayStr) {
+  if (!birthdayStr) return null;
+  const today = new Date();
+  const bday = new Date(birthdayStr);
+  const next = new Date(today.getFullYear(), bday.getMonth(), bday.getDate());
+  if (next < today) next.setFullYear(today.getFullYear() + 1);
+  const diff = Math.round((next - today) / 86400000);
+  return diff;
+}
+
+// ── Render friend list ────────────────────────────────────────────────────
+function renderFriendList() {
+  const container = document.getElementById('friend-list-container');
+  if (friends.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📓</div>
+        <p>尚未記錄任何朋友<br>點「新增朋友」開始吧！</p>
+      </div>`;
+    return;
+  }
+  container.innerHTML = `
+    <div class="section-label">我的朋友（${friends.length} 人）</div>
+    <div class="friend-list">
+      ${friends.map((f, i) => `
+        <div class="friend-card ${i === currentIdx ? 'selected' : ''}" onclick="showDetail(${i})">
+          ${f.photo
+            ? `<img class="friend-avatar" src="data:image/jpeg;base64,${f.photo}" alt="${f.name}">`
+            : `<div class="friend-avatar-placeholder">👤</div>`}
+          <div class="friend-card-info">
+            <div class="friend-card-name">${f.name}</div>
+            <div class="friend-card-sub">🌟 ${f.interests || '未記錄'}</div>
+          </div>
+          <span style="color:var(--text-light);font-size:1.1rem">›</span>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+// ── Show Detail ───────────────────────────────────────────────────────────
+function showDetail(idx) {
+  currentIdx = idx;
+  const f = friends[idx];
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('detail-view').style.display = 'block';
+
+  // Photo
+  const photoWrap = document.getElementById('detail-photo-wrap');
+  photoWrap.innerHTML = f.photo
+    ? `<img class="detail-avatar" src="data:image/jpeg;base64,${f.photo}" alt="${f.name}">`
+    : `<div class="detail-avatar-placeholder">👤</div>`;
+
+  document.getElementById('detail-name').textContent = f.name;
+  document.getElementById('detail-meta').textContent =
+    `🎂 生日：${f.birthday || '未記錄'} ｜ 更新：${f.last_updated || '—'}`;
+
+  // Birthday countdown badge
+  const badge = document.getElementById('detail-birthday-badge');
+  const days = daysUntilBirthday(f.birthday);
+  if (days !== null && days <= 30) {
+    badge.innerHTML = days === 0
+      ? `<span class="birthday-badge">🎉 今天是生日！</span>`
+      : `<span class="birthday-badge">🎂 還有 ${days} 天生日</span>`;
+  } else { badge.innerHTML = ''; }
+
+  document.getElementById('detail-interests').textContent = f.interests || '—';
+  document.getElementById('detail-siblings').textContent = f.siblings || '—';
+  document.getElementById('detail-likes').textContent = f.likes || '尚未記錄';
+  document.getElementById('detail-dislikes').textContent = f.dislikes || '尚未記錄';
+
+  // Social coaching
+  const topic = f.interests || f.likes || '你喜歡的東西';
+  const t = topic.length > 15 ? topic.slice(0, 15) + '..' : topic;
+  document.getElementById('coaching-intro').textContent =
+    `✅ 與 ${f.name} 開啟話題的建議句子：`;
+
+  const items = [
+    { what: '何人', sentence: `「除了你，還有誰也喜歡 ${t} 嗎？」` },
+    { what: '何事', sentence: `「關於 ${t}，你最近有什麼新發現嗎？」` },
+    { what: '何時', sentence: `「你通常在什麼時候玩/看有關 ${t} 的東西？」` },
+    { what: '為何', sentence: `「為什麼你會對 ${t} 這麼感興趣？」` },
+    { what: '何地', sentence: `「你最喜歡在哪裡看/玩有關 ${t} 的東西？」` },
+    { what: '如何', sentence: `「如果我想試試 ${t}，要怎樣開始？」` },
+  ];
+  document.getElementById('coaching-grid').innerHTML = items.map(item => `
+    <div class="coaching-item">
+      <div class="what">${item.what}</div>
+      <div class="sentence">${item.sentence}</div>
+    </div>`).join('');
+
+  const warningEl = document.getElementById('coaching-warning');
+  warningEl.innerHTML = f.dislikes
+    ? `<div class="warning-box">⚠️ <span>聊天時請<strong>避開</strong>提及：${f.dislikes}</span></div>`
+    : '';
+
+  // Prefill edit form
+  document.getElementById('edit-name').value = f.name;
+  document.getElementById('edit-interests').value = f.interests || '';
+  document.getElementById('edit-likes').value = f.likes || '';
+  document.getElementById('edit-dislikes').value = f.dislikes || '';
+  document.getElementById('edit-siblings').value = f.siblings || '';
+
+  // Close edit panel
+  const ep = document.getElementById('edit-panel');
+  ep.classList.remove('open');
+  editOpen = false;
+  document.getElementById('edit-toggle-icon').textContent = '▼';
+
+  window.scrollTo(0, 0);
+}
+
+function showListView() {
+  document.getElementById('list-view').style.display = 'block';
+  document.getElementById('detail-view').style.display = 'none';
+  renderFriendList();
+}
+
+// ── Toggle edit ───────────────────────────────────────────────────────────
+function toggleEdit() {
+  editOpen = !editOpen;
+  document.getElementById('edit-panel').classList.toggle('open', editOpen);
+  document.getElementById('edit-toggle-icon').textContent = editOpen ? '▲' : '▼';
+}
+
+// ── Save edit ─────────────────────────────────────────────────────────────
+function saveEdit() {
+  if (currentIdx < 0) return;
+  friends[currentIdx] = {
+    ...friends[currentIdx],
+    name: document.getElementById('edit-name').value.trim() || friends[currentIdx].name,
+    interests: document.getElementById('edit-interests').value.trim(),
+    likes: document.getElementById('edit-likes').value.trim(),
+    dislikes: document.getElementById('edit-dislikes').value.trim(),
+    siblings: document.getElementById('edit-siblings').value.trim(),
+    last_updated: new Date().toISOString().slice(0, 10)
+  };
+  save();
+  showToast('✅ 修改已儲存！');
+  showDetail(currentIdx);
+}
+
+// ── Delete friend ─────────────────────────────────────────────────────────
+function deleteFriend() {
+  if (currentIdx < 0) return;
+  const name = friends[currentIdx].name;
+  if (!confirm(`確定要刪除「${name}」的資料嗎？`)) return;
+  friends.splice(currentIdx, 1);
+  save();
+  currentIdx = -1;
+  showListView();
+  showToast(`🗑️ 已刪除 ${name}`);
+}
+
+// ── Photo upload ──────────────────────────────────────────────────────────
+let currentPhotoBase64 = null;
+
+function handlePhotoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    // Resize with canvas
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxSize = 300;
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > maxSize) { h *= maxSize/w; w = maxSize; } }
+      else { if (h > maxSize) { w *= maxSize/h; h = maxSize; } }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const b64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+      currentPhotoBase64 = b64;
+      // Update preview
+      const preview = document.getElementById('add-photo-preview');
+      const placeholder = document.getElementById('add-photo-placeholder');
+      preview.src = 'data:image/jpeg;base64,' + b64;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Add friend ────────────────────────────────────────────────────────────
+function addFriend() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { showToast('⚠️ 請輸入朋友名字'); return; }
+
+  const entry = {
+    name,
+    birthday: document.getElementById('add-birthday').value,
+    siblings: document.getElementById('add-siblings').value.trim(),
+    interests: document.getElementById('add-interests').value.trim(),
+    likes: document.getElementById('add-likes').value.trim(),
+    dislikes: document.getElementById('add-dislikes').value.trim(),
+    photo: currentPhotoBase64,
+    last_updated: new Date().toISOString().slice(0, 10)
+  };
+
+  friends.push(entry);
+  save();
+  showToast(`✅ 已儲存 ${name} 的資料！`);
+
+  // Reset form
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-birthday').value = '2010-01-01';
+  document.getElementById('add-siblings').value = '';
+  document.getElementById('add-interests').value = '';
+  document.getElementById('add-likes').value = '';
+  document.getElementById('add-dislikes').value = '';
+  document.getElementById('photo-input').value = '';
+  document.getElementById('add-photo-preview').style.display = 'none';
+  document.getElementById('add-photo-placeholder').style.display = 'flex';
+  currentPhotoBase64 = null;
+
+  switchTab('review');
+  renderFriendList();
+}
+
+// ── Export JSON ───────────────────────────────────────────────────────────
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(friends, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `my_social_notes_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 備份檔已下載！');
+}
+
+// ── Import JSON ───────────────────────────────────────────────────────────
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error();
+      if (!confirm(`確定要匯入 ${data.length} 個朋友的資料嗎？（現有資料將被取代）`)) return;
+      friends = data;
+      save();
+      showToast(`✅ 成功匯入 ${friends.length} 個朋友！`);
+      renderStats();
+    } catch {
+      showToast('⚠️ 檔案格式錯誤');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────
+function renderStats() {
+  const el = document.getElementById('stats-content');
+  if (friends.length === 0) {
+    el.innerHTML = '<span style="color:var(--text-light)">尚未記錄任何朋友。</span>';
+    return;
+  }
+  const withPhoto = friends.filter(f => f.photo).length;
+  const upcoming = friends.filter(f => {
+    const d = daysUntilBirthday(f.birthday);
+    return d !== null && d <= 30;
+  });
+  el.innerHTML = `
+    📓 已記錄朋友：<strong>${friends.length}</strong> 人<br>
+    📸 有相片：<strong>${withPhoto}</strong> 人<br>
+    🎂 30天內生日：<strong>${upcoming.length}</strong> 人
+    ${upcoming.length > 0 ? '<br>　' + upcoming.map(f => {
+      const d = daysUntilBirthday(f.birthday);
+      return `${f.name}（${d === 0 ? '今天！' : d + ' 天後'}）`;
+    }).join('、') : ''}
+  `;
+}
+
+// ── Clear all ─────────────────────────────────────────────────────────────
+function clearAll() {
+  if (!confirm('確定要刪除所有朋友資料嗎？此操作無法復原！')) return;
+  friends = [];
+  save();
+  currentIdx = -1;
+  showToast('🗑️ 所有資料已清除');
+  renderStats();
+}
+
+// ── Service Worker ────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+load();
+renderFriendList();
+</script>
+</body>
+</html>

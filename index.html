@@ -32,6 +32,7 @@
 
     body {
       font-family: -apple-system, 'Segoe UI', sans-serif;
+      font-size: 14px;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -50,7 +51,7 @@
       box-shadow: 0 2px 12px rgba(79,70,229,0.3);
     }
     .app-header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; }
-    .app-header p { font-size: 0.75rem; opacity: 0.85; margin-top: 1px; }
+    .app-header p { font-size: 14px; opacity: 0.85; margin-top: 1px; }
 
     /* ── Install Banner ── */
     #install-banner {
@@ -60,7 +61,7 @@
       padding: 10px 16px;
       align-items: center;
       gap: 10px;
-      font-size: 0.82rem;
+      font-size: 14px;
     }
     #install-banner.show { display: flex; }
     #install-banner button {
@@ -69,7 +70,7 @@
       border: none;
       padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.8rem;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
@@ -95,7 +96,7 @@
       padding: 13px 8px;
       border: none;
       background: transparent;
-      font-size: 0.82rem;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text-light);
       cursor: pointer;
@@ -128,7 +129,7 @@
       border: 1px solid var(--border);
     }
     .card-title {
-      font-size: 0.85rem;
+      font-size: 14px;
       font-weight: 700;
       color: var(--primary);
       margin-bottom: 12px;
@@ -141,7 +142,7 @@
     .form-group { margin-bottom: 14px; }
     label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text-light);
       margin-bottom: 5px;
@@ -151,7 +152,7 @@
       padding: 11px 14px;
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      font-size: 0.92rem;
+      font-size: 14px;
       background: #fafafa;
       color: var(--text);
       outline: none;
@@ -196,12 +197,22 @@
       border-radius: 10px;
       background: #eef2ff;
       color: var(--primary);
-      font-size: 0.82rem;
+      font-size: 14px;
       font-weight: 600;
       text-align: center;
       cursor: pointer;
     }
-    #photo-input { display: none; }
+    #photo-input, #camera-input { display: none; }
+    .camera-btn {
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .camera-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+    .photo-hint { margin-top: 8px; font-size: 14px; color: var(--text-muted, #6b7280); }
 
     /* ── Buttons ── */
     .btn {
@@ -212,7 +223,7 @@
       padding: 12px 20px;
       border-radius: 12px;
       border: none;
-      font-size: 0.9rem;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.15s;
@@ -228,7 +239,7 @@
       color: var(--primary);
       border: 1.5px solid var(--primary);
     }
-    .btn-sm { padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; width: auto; }
+    .btn-sm { padding: 8px 14px; font-size: 14px; border-radius: 8px; width: auto; }
 
     /* ── Friend selector ── */
     .friend-list { display: flex; flex-direction: column; gap: 10px; }
@@ -270,8 +281,8 @@
       flex-shrink: 0;
     }
     .friend-card-info { flex: 1; min-width: 0; }
-    .friend-card-name { font-weight: 700; font-size: 0.95rem; }
-    .friend-card-sub { font-size: 0.75rem; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .friend-card-name { font-weight: 700; font-size: 14px; }
+    .friend-card-sub { font-size: 14px; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 
     /* ── Friend detail view ── */
     .detail-header {
@@ -300,7 +311,7 @@
       flex-shrink: 0;
     }
     .detail-name { font-size: 1.3rem; font-weight: 800; }
-    .detail-meta { font-size: 0.78rem; color: var(--text-light); margin-top: 3px; }
+    .detail-meta { font-size: 14px; color: var(--text-light); margin-top: 3px; }
 
     .info-row {
       display: flex;
@@ -309,13 +320,13 @@
       align-items: flex-start;
     }
     .info-label {
-      font-size: 0.75rem;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text-light);
       min-width: 60px;
       padding-top: 1px;
     }
-    .info-value { font-size: 0.88rem; flex: 1; }
+    .info-value { font-size: 14px; flex: 1; }
 
     .likes-box {
       background: #ecfdf5;
@@ -331,11 +342,11 @@
       padding: 12px;
     }
     .box-title {
-      font-size: 0.78rem;
+      font-size: 14px;
       font-weight: 700;
       margin-bottom: 6px;
     }
-    .box-content { font-size: 0.88rem; white-space: pre-wrap; }
+    .box-content { font-size: 14px; white-space: pre-wrap; }
 
     /* ── Social coaching ── */
     .coaching-grid {
@@ -350,14 +361,14 @@
       padding: 10px;
       border-left: 3px solid var(--primary-light);
     }
-    .coaching-item .what { font-size: 0.72rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
-    .coaching-item .sentence { font-size: 0.78rem; color: var(--text); line-height: 1.4; }
+    .coaching-item .what { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .coaching-item .sentence { font-size: 14px; color: var(--text); line-height: 1.4; }
     .warning-box {
       background: #fffbeb;
       border: 1px solid #fbbf24;
       border-radius: 10px;
       padding: 10px 12px;
-      font-size: 0.82rem;
+      font-size: 14px;
       margin-top: 8px;
       display: flex;
       gap: 8px;
@@ -375,7 +386,7 @@
       color: var(--text-light);
     }
     .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
-    .empty-state p { font-size: 0.9rem; }
+    .empty-state p { font-size: 14px; }
 
     /* ── Toast ── */
     #toast {
@@ -387,7 +398,7 @@
       color: white;
       padding: 10px 20px;
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 14px;
       font-weight: 600;
       opacity: 0;
       transition: all 0.3s;
@@ -408,7 +419,7 @@
       align-items: center;
       gap: 6px;
       color: var(--primary);
-      font-size: 0.85rem;
+      font-size: 14px;
       font-weight: 600;
       background: none;
       border: none;
@@ -433,13 +444,13 @@
       color: #92400e;
       border-radius: 20px;
       padding: 3px 10px;
-      font-size: 0.75rem;
+      font-size: 14px;
       font-weight: 600;
       margin-top: 6px;
     }
 
     .section-label {
-      font-size: 0.78rem;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text-light);
       text-transform: uppercase;
@@ -526,7 +537,7 @@
     <!-- Social Coaching -->
     <div class="card">
       <div class="card-title">💡 社交教練：六何法開話題</div>
-      <div id="coaching-intro" style="font-size:0.82rem;color:var(--text-light);margin-bottom:8px;"></div>
+      <div id="coaching-intro" style="font-size: 14px;color:var(--text-light);margin-bottom:8px;"></div>
       <div class="coaching-grid" id="coaching-grid"></div>
       <div id="coaching-warning"></div>
     </div>
@@ -578,19 +589,23 @@
 
     <div class="form-group">
       <label>生日日期</label>
-      <input type="date" id="add-birthday" value="2010-01-01">
+      <input type="date" id="add-birthday" value="2010-01-01" onchange="if (this.value &amp;&amp; this.validity.valid) this.blur()">
     </div>
 
     <div class="form-group">
       <label>相片</label>
       <div class="photo-upload">
-        <div class="photo-placeholder" id="add-photo-placeholder" onclick="document.getElementById('photo-input').click()">📷</div>
-        <img class="photo-preview" id="add-photo-preview" style="display:none;" src="" alt="相片預覽">
+        <button type="button" class="camera-btn" aria-label="開啟相機拍照或重新拍照" title="撳一下拍照" onclick="document.getElementById('camera-input').click()">
+          <span class="photo-placeholder" id="add-photo-placeholder" aria-hidden="true">📷</span>
+          <img class="photo-preview" id="add-photo-preview" style="display:none;" src="" alt="相片預覽，撳一下可重新拍照">
+        </button>
         <div class="upload-btn" onclick="document.getElementById('photo-input').click()">
-          點此上傳相片<br>
+          從相簿揀相<br>
           <span style="font-weight:400;opacity:0.7">(JPG / PNG)</span>
         </div>
       </div>
+      <div class="photo-hint">撳圓形相片圖示拍照，或從相簿揀相。</div>
+      <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="handlePhotoUpload(this)">
       <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(this)">
     </div>
 
@@ -622,7 +637,7 @@
 <div id="tab-settings" class="tab-content">
   <div class="card">
     <div class="card-title">📤 備份與還原</div>
-    <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:14px;">
+    <p style="font-size: 14px;color:var(--text-light);margin-bottom:14px;">
       所有資料已自動儲存在你的手機上。你也可以匯出 JSON 檔案作備份，或在新裝置上還原。
     </p>
     <div class="data-row">
@@ -634,12 +649,12 @@
 
   <div class="card">
     <div class="card-title">📊 統計</div>
-    <div id="stats-content" style="font-size:0.9rem;line-height:1.8;"></div>
+    <div id="stats-content" style="font-size: 14px;line-height:1.8;"></div>
   </div>
 
   <div class="card" style="border-color:#fca5a5;">
     <div class="card-title" style="color:var(--danger);">⚠️ 危險區域</div>
-    <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:12px;">刪除所有朋友資料（無法復原）</p>
+    <p style="font-size: 14px;color:var(--text-light);margin-bottom:12px;">刪除所有朋友資料（無法復原）</p>
     <button class="btn btn-danger" onclick="clearAll()">🗑️ 清除全部資料</button>
   </div>
 </div>
@@ -782,12 +797,12 @@ function showDetail(idx) {
     `✅ 與 ${f.name} 開啟話題的建議句子：`;
 
   const items = [
-    { what: '何人', sentence: `「除了你，還有誰也喜歡 ${t} 嗎？」` },
-    { what: '何事', sentence: `「關於 ${t}，你最近有什麼新發現嗎？」` },
-    { what: '何時', sentence: `「你通常在什麼時候玩/看有關 ${t} 的東西？」` },
-    { what: '為何', sentence: `「為什麼你會對 ${t} 這麼感興趣？」` },
-    { what: '何地', sentence: `「你最喜歡在哪裡看/玩有關 ${t} 的東西？」` },
-    { what: '如何', sentence: `「如果我想試試 ${t}，要怎樣開始？」` },
+    { what: '何人', sentence: `「除咗你，仲有邊個都鍾意 ${t} 㗎？」` },
+    { what: '何事', sentence: `「講開 ${t}，你最近有冇咩新發現呀？」` },
+    { what: '何時', sentence: `「你通常幾時會玩吓或者睇吓同 ${t} 有關嘅嘢㗎？」` },
+    { what: '為何', sentence: `「點解你對 ${t} 咁有興趣嘅？」` },
+    { what: '何地', sentence: `「你最鍾意喺邊度睇或者玩同 ${t} 有關嘅嘢呀？」` },
+    { what: '如何', sentence: `「如果我都想試吓 ${t}，可以點樣開始呀？」` },
   ];
   document.getElementById('coaching-grid').innerHTML = items.map(item => `
     <div class="coaching-item">
@@ -888,6 +903,7 @@ function handlePhotoUpload(input) {
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
+  input.value = '';
 }
 
 // ── Add friend ────────────────────────────────────────────────────────────
@@ -918,6 +934,7 @@ function addFriend() {
   document.getElementById('add-likes').value = '';
   document.getElementById('add-dislikes').value = '';
   document.getElementById('photo-input').value = '';
+  document.getElementById('camera-input').value = '';
   document.getElementById('add-photo-preview').style.display = 'none';
   document.getElementById('add-photo-placeholder').style.display = 'flex';
   currentPhotoBase64 = null;

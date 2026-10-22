@@ -203,6 +203,8 @@
       cursor: pointer;
     }
     #photo-input, #camera-input { display: none; }
+    .birthday-fields { display: flex; gap: 10px; }
+    .birthday-fields select { flex: 1; min-width: 0; }
     .camera-btn {
       padding: 0;
       border: 0;
@@ -553,6 +555,13 @@
           <input type="text" id="edit-name">
         </div>
         <div class="form-group">
+          <label>生日（月份及日期）</label>
+          <div class="birthday-fields">
+            <select id="edit-birthday-month" aria-label="生日月份" onchange="updateBirthdayDays('edit-birthday-day','edit-birthday-month')"></select>
+            <select id="edit-birthday-day" aria-label="生日日期"></select>
+          </div>
+        </div>
+        <div class="form-group">
           <label>興趣</label>
           <input type="text" id="edit-interests">
         </div>
@@ -588,8 +597,12 @@
     </div>
 
     <div class="form-group">
-      <label>生日日期</label>
-      <input type="date" id="add-birthday" value="2010-01-01" onchange="if (this.value &amp;&amp; this.validity.valid) this.blur()">
+      <label>生日（月份及日期）</label>
+      <div class="birthday-fields">
+        <select id="add-birthday-month" aria-label="生日月份" onchange="updateBirthdayDays('add-birthday-day','add-birthday-month')"></select>
+        <select id="add-birthday-day" aria-label="生日日期"></select>
+      </div>
+      <div class="photo-hint">只需選月份和日期，毋須輸入年份。</div>
     </div>
 
     <div class="form-group">
@@ -677,7 +690,52 @@ function load() {
   try {
     const raw = localStorage.getItem('friend_notes_v1');
     friends = raw ? JSON.parse(raw) : [];
+    friends = friends.map(friend => ({
+      ...friend,
+      birthday: normalizeBirthday(friend.birthday)
+    }));
   } catch(e) { friends = []; }
+}
+
+function normalizeBirthday(value) {
+  if (!value) return '';
+  const match = String(value).match(/^(?:\d{4}-)?(\d{2})-(\d{2})$/);
+  return match ? `${match[1]}-${match[2]}` : '';
+}
+
+function initializeBirthdayFields() {
+  ['add-birthday-month', 'edit-birthday-month'].forEach(id => {
+    const month = document.getElementById(id);
+    month.innerHTML = '<option value="">月份</option>' +
+      Array.from({length: 12}, (_, i) => `<option value="${String(i + 1).padStart(2, '0')}">${i + 1}月</option>`).join('');
+    updateBirthdayDays(id.replace('-month', '-day'), id);
+  });
+}
+
+function updateBirthdayDays(dayId, monthId) {
+  const month = document.getElementById(monthId).value;
+  const daySelect = document.getElementById(dayId);
+  const previousDay = daySelect.value;
+  const count = month ? new Date(2000, Number(month), 0).getDate() : 31;
+  daySelect.innerHTML = '<option value="">日期</option>' +
+    Array.from({length: count}, (_, i) => `<option value="${String(i + 1).padStart(2, '0')}">${i + 1}日</option>`).join('');
+  if (Number(previousDay) <= count) daySelect.value = previousDay;
+}
+
+function setBirthdayFields(prefix, value) {
+  const birthday = normalizeBirthday(value);
+  const [month = '', day = ''] = birthday.split('-');
+  const monthSelect = document.getElementById(`${prefix}-birthday-month`);
+  const daySelect = document.getElementById(`${prefix}-birthday-day`);
+  monthSelect.value = month;
+  updateBirthdayDays(`${prefix}-birthday-day`, `${prefix}-birthday-month`);
+  daySelect.value = day;
+}
+
+function getBirthdayFields(prefix) {
+  const month = document.getElementById(`${prefix}-birthday-month`).value;
+  const day = document.getElementById(`${prefix}-birthday-day`).value;
+  return month && day ? `${month}-${day}` : '';
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────
@@ -723,8 +781,9 @@ window.addEventListener('appinstalled', () => {
 function daysUntilBirthday(birthdayStr) {
   if (!birthdayStr) return null;
   const today = new Date();
-  const bday = new Date(birthdayStr);
-  const next = new Date(today.getFullYear(), bday.getMonth(), bday.getDate());
+  const [month, day] = normalizeBirthday(birthdayStr).split('-').map(Number);
+  if (!month || !day) return null;
+  const next = new Date(today.getFullYear(), month - 1, day);
   if (next < today) next.setFullYear(today.getFullYear() + 1);
   const diff = Math.round((next - today) / 86400000);
   return diff;
@@ -774,7 +833,7 @@ function showDetail(idx) {
 
   document.getElementById('detail-name').textContent = f.name;
   document.getElementById('detail-meta').textContent =
-    `🎂 生日：${f.birthday || '未記錄'} ｜ 更新：${f.last_updated || '—'}`;
+    `🎂 生日：${f.birthday ? `${Number(f.birthday.slice(0, 2))}月${Number(f.birthday.slice(3, 5))}日` : '未記錄'} ｜ 更新：${f.last_updated || '—'}`;
 
   // Birthday countdown badge
   const badge = document.getElementById('detail-birthday-badge');
@@ -817,6 +876,7 @@ function showDetail(idx) {
 
   // Prefill edit form
   document.getElementById('edit-name').value = f.name;
+  setBirthdayFields('edit', f.birthday);
   document.getElementById('edit-interests').value = f.interests || '';
   document.getElementById('edit-likes').value = f.likes || '';
   document.getElementById('edit-dislikes').value = f.dislikes || '';
@@ -850,6 +910,7 @@ function saveEdit() {
   friends[currentIdx] = {
     ...friends[currentIdx],
     name: document.getElementById('edit-name').value.trim() || friends[currentIdx].name,
+    birthday: getBirthdayFields('edit'),
     interests: document.getElementById('edit-interests').value.trim(),
     likes: document.getElementById('edit-likes').value.trim(),
     dislikes: document.getElementById('edit-dislikes').value.trim(),
@@ -913,7 +974,7 @@ function addFriend() {
 
   const entry = {
     name,
-    birthday: document.getElementById('add-birthday').value,
+    birthday: getBirthdayFields('add'),
     siblings: document.getElementById('add-siblings').value.trim(),
     interests: document.getElementById('add-interests').value.trim(),
     likes: document.getElementById('add-likes').value.trim(),
@@ -928,7 +989,7 @@ function addFriend() {
 
   // Reset form
   document.getElementById('add-name').value = '';
-  document.getElementById('add-birthday').value = '2010-01-01';
+  setBirthdayFields('add', '');
   document.getElementById('add-siblings').value = '';
   document.getElementById('add-interests').value = '';
   document.getElementById('add-likes').value = '';
@@ -965,7 +1026,10 @@ function importJSON(input) {
       const data = JSON.parse(e.target.result);
       if (!Array.isArray(data)) throw new Error();
       if (!confirm(`確定要匯入 ${data.length} 個朋友的資料嗎？（現有資料將被取代）`)) return;
-      friends = data;
+      friends = data.map(friend => ({
+        ...friend,
+        birthday: normalizeBirthday(friend.birthday)
+      }));
       save();
       showToast(`✅ 成功匯入 ${friends.length} 個朋友！`);
       renderStats();
@@ -1021,6 +1085,7 @@ if ('serviceWorker' in navigator) {
 
 // ── Init ──────────────────────────────────────────────────────────────────
 load();
+initializeBirthdayFields();
 renderFriendList();
 </script>
 </body>

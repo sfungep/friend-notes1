@@ -1,4 +1,4 @@
-const CACHE_NAME = 'friend-notes-v1';
+const CACHE_NAME = 'friend-notes-v6';
 const ASSETS = [
   './index.html',
   './manifest.json',
